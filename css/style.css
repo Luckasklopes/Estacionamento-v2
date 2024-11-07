@@ -1,0 +1,32 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: yellow;
+}
+
+h2 {
+    color: #333;
+}
+
+form, .carros, table {
+    margin: 20px 0;
+}
+
+.carro-card {
+    border: 1px solid #ff0000;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ff0000;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
