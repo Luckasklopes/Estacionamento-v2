@@ -1,6 +1,9 @@
 .modal {
     display: none;
     position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     z-index: 1000;
     left: 0;
     top: 0;
@@ -12,7 +15,7 @@
 .modal-content {
     position: relative;
     background-color: #fff;
-    margin: 15% auto;
+    margin: 15%;
     padding: 20px;
     width: 80%;
     max-width: 400px;
@@ -50,7 +53,7 @@
 }
 
 .modal-content input {
-    width: 100%;
+    width: 10%;
     padding: 8px;
     margin-top: 8px;
     font-size: 14px;

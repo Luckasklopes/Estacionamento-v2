@@ -1,6 +1,15 @@
 <?php
 include 'config/db_connect.php';
 
+// Recupera as taxas atuais para preencher os campos do modal
+$sql_taxas = "SELECT taxa_minima, preco_por_hora FROM configuracoes WHERE id = 1";
+$stmt_taxas = $conn->prepare($sql_taxas);
+$stmt_taxas->execute();
+$taxas = $stmt_taxas->fetch(PDO::FETCH_ASSOC);
+
+$taxa_minima = $taxas['taxa_minima'];
+$preco_por_hora = $taxas['preco_por_hora'];
+
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["placa"])) {
     $placa = $_POST["placa"];
 
@@ -33,30 +42,41 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Sistema de Estacionamento</title>
 </head>
 <body>
-    <h2>Entrada de Veículos</h2>
-    <form method="POST" action="">
-        <label>Placa:</label>
-        <input type="text" name="placa" required>
-        <button type="submit">Registrar Entrada</button>
-    </form>
+    <h2 class="titulo">Entrada de Veículos</h2>
+        <!-- Botão para abrir o modal de configurações -->
+        <button onclick="showConfigModal()" class="button-modal" style="width: 15%">Configurações de Taxas</button>
+    <div class="formulario">
+        <form method="POST" action="" class="client-form">
+            <div class="form-row" style="margin-bottom: 0px">
+                <!-- <label>Placa:</label> -->
+                <input type="text" name="placa" required class="form-input" placeholder="Placa">
+                <button type="submit" class="button">Registrar Entrada</button>
+                <div class="button">
+                    <a href="historico.php" class="hist-text">Histórico</a>
+                </div>
+            </div>
+        </form>
+    </div>
 
-    <h3>Veículos Estacionados</h3>
+    <h3 class="titulo">Veículos Estacionados</h3>
     <div class="carros">
         <?php foreach ($result as $row): ?>
             <div class="carro-card">
-                <p>Placa: <?php echo $row['placa']; ?></p>
-                <p>Entrada: <?php echo $row['hora_entrada']; ?></p>
+                <p class="normal-text">Placa </p>
+                <div class="valores-card">
+                    <p><?php echo $row['placa']; ?></p>
+                </div>
+                <p class="normal-text">Entrada </p>
+                <div class="valores-card">
+                    <p><?php echo date('d/m/Y H:i', strtotime($row['hora_entrada'])); ?></p>
+                </div>
                 <form action="actions/registrar_saida.php" method="POST">
                     <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-                    <button type="submit">Registrar Saída</button>
+                    <button type="submit" class="button" style="margin-top:10px">Registrar Saída</button>
                 </form>
             </div>
         <?php endforeach; ?>
     </div>
-
-
-    <!-- Botão para abrir o modal de configurações -->
-    <button onclick="showConfigModal()">Configurações de Taxas</button>
 
     <!-- Modal de Configurações -->
     <div id="configModal" class="modal">
@@ -65,10 +85,12 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <h3>Configurações de Taxas</h3>
             <form id="configForm" action="actions/update_taxas.php" method="POST">
                 <label for="taxa_minima">Taxa Mínima:</label>
-                <input type="number" name="taxa_minima" id="taxa_minima" step="0.01" required>
+                <!-- Preenche o input com o valor atual da taxa mínima -->
+                <input type="number" name="taxa_minima" id="taxa_minima" step="0.01" value="<?php echo htmlspecialchars($taxa_minima); ?>" required>
                 
                 <label for="preco_por_hora">Preço por Hora:</label>
-                <input type="number" name="preco_por_hora" id="preco_por_hora" step="0.01" required>
+                <!-- Preenche o input com o valor atual do preço por hora -->
+                <input type="number" name="preco_por_hora" id="preco_por_hora" step="0.01" value="<?php echo htmlspecialchars($preco_por_hora); ?>" required>
                 
                 <button type="submit">Salvar</button>
             </form>

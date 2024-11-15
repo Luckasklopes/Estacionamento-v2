@@ -1,10 +1,19 @@
 <?php
 include '../config/db_connect.php';
 
+// Recupera as taxas atualizadas do banco de dados
+$sql_taxas = "SELECT taxa_minima, preco_por_hora FROM configuracoes WHERE id = 1";
+$stmt_taxas = $conn->prepare($sql_taxas);
+$stmt_taxas->execute();
+$taxas = $stmt_taxas->fetch(PDO::FETCH_ASSOC);
+
+date_default_timezone_set('America/Rio_Branco');
+
+$taxa_minima = $taxas['taxa_minima'];
+$preco_por_hora = $taxas['preco_por_hora'];
+
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"])) {
     $id = $_POST["id"];
-    $taxa_minima = 5.00;
-    $preco_por_hora = 3.00;
 
     $sql = "SELECT placa, hora_entrada FROM entradas WHERE id = :id";
     $stmt = $conn->prepare($sql);
@@ -15,13 +24,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"])) {
     $hora_saida = new DateTime();
     $intervalo = $hora_saida->diff($hora_entrada);
 
-    $horas = ceil($intervalo->h + $intervalo->i / 60);
+    // Calcula o total de horas completas
+    $horas = $intervalo->h + ($intervalo->days * 24);
+    if ($intervalo->i > 0) {  // Se houver minutos adicionais, conta como uma hora adicional
+        $horas += 1;
+    }
+
+    // Calcula o valor total a ser cobrado
     $valor = $taxa_minima + ($preco_por_hora * $horas);
 
+    // Atualiza a entrada com a hora de saída e o valor calculado
     $sql_update = "UPDATE entradas SET hora_saida = NOW(), valor = :valor WHERE id = :id";
     $stmt_update = $conn->prepare($sql_update);
     $stmt_update->execute(['valor' => $valor, 'id' => $id]);
 
+    // Insere o histórico da saída
     $sql_insert_historico = "INSERT INTO historico (placa, hora_entrada, hora_saida, valor) 
                              VALUES (:placa, :hora_entrada, NOW(), :valor)";
     $stmt_historico = $conn->prepare($sql_insert_historico);
